@@ -116,11 +116,11 @@ resource "azurerm_container_group" "aci" {
 
     # Env-Vars für DB-Connect – in deiner App z.B. über process.env.MYSQL_HOST etc.
     environment_variables = {
-      MYSQL_HOST     = azurerm_mysql_flexible_server.mysql.fqdn
-      MYSQL_PORT     = "3306"
-      MYSQL_DATABASE = azurerm_mysql_flexible_database.db.name
-      MYSQL_USER     = "${var.mysql_admin_login}@${azurerm_mysql_flexible_server.mysql.name}"
-      MYSQL_PASSWORD = var.mysql_admin_password
+      DB_HOST     = azurerm_mysql_flexible_server.mysql.fqdn
+      DB_PORT     = "3306"
+      DB_DATABASE = azurerm_mysql_flexible_database.db.name
+      DB_USERNAME = "${var.mysql_admin_login}@${azurerm_mysql_flexible_server.mysql.name}"
+      DB_PASSWORD = var.mysql_admin_password
     }
   }
 
