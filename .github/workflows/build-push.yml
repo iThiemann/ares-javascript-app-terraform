@@ -1,0 +1,46 @@
+
+name: Build and Push to GHCR (Dev)
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t ghcr.io/${{ github.repository_owner }}/ares-javascript-app:dev .
+
+    - name: Push Docker image
+      run: |
+        docker push ghcr.io/${{ github.repository_owner }}/ares-javascript-app:dev
+
+    - name: Export image tag
+      id: meta
+      run: |
+        echo "tag=dev" >> $GITHUB_OUTPUT
+
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
