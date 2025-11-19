@@ -18,6 +18,10 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+# Cluster config files and secrets
+kubeconfig-kind
+dev-cluster-config
+
 # Terraform override files
 override.tf
 override.tf.json
