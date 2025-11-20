@@ -1,0 +1,63 @@
+
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+  pull_request:
+
+jobs:
+  terraform:
+    name: Lint, Format, Validate & Security Check
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      # 1) Checkout repo
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) Set up Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.0      # adjust to your version
+        #  cli_config_credentials_token: ""  # only needed for Terraform Cloud
+
+      # 3) Terraform fmt (check only, no changes)
+      - name: Terraform fmt (check)
+        run: terraform fmt -check -recursive
+
+      # 4) Install TFLint (Terraform linter)
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      # 5) Run TFLint (lint all Terraform code)
+      - name: TFLint
+        run: |
+          # Initialize TFLint (downloads plugins defined in .tflint.hcl if present)
+          tflint --init
+          # Lint recursively starting from repo root
+          tflint --recursive
+
+      # 6) Terraform init (without backend, for validation only)
+      - name: Terraform init (validation only)
+        run: terraform init -backend=false -input=false
+
+      # 7) Terraform validate
+      - name: Terraform validate
+        run: terraform validate -no-color
+
+      # 8) Optional: tfsec security scan (IaC security check)
+      - name: Run tfsec (security check)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          # Fail the build on HIGH/CRITICAL by default; adjust as you like
+          additional_args: --severity HIGH,CRITICAL
