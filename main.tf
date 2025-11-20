@@ -11,8 +11,8 @@ resource "kind_cluster" "dev" {
 
     # Expose API server for remote use
     networking {
-      api_server_address = "0.0.0.0"  # listen on all interfaces
-      api_server_port    = 6443       # fixed port instead of random
+      api_server_address = "0.0.0.0" # listen on all interfaces
+      api_server_port    = 6443      # fixed port instead of random
     }
 
     # Control-plane node, port-mapped to host
@@ -22,6 +22,27 @@ resource "kind_cluster" "dev" {
       extra_port_mappings {
         container_port = 30080
         host_port      = 30080
+        protocol       = "TCP"
+      }
+
+      extra_port_mappings {
+        container_port = 3000
+        host_port      = 3000
+        listen_address = "0.0.0.0"
+        protocol       = "TCP"
+      }
+
+      extra_port_mappings {
+        container_port = 8080
+        host_port      = 8080
+        listen_address = "0.0.0.0"
+        protocol       = "TCP"
+      }
+
+      extra_port_mappings {
+        container_port = 443
+        host_port      = 8443
+        listen_address = "0.0.0.0"
         protocol       = "TCP"
       }
     }
