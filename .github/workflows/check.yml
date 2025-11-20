@@ -59,5 +59,6 @@ jobs:
       - name: Run tfsec (security check)
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           # Fail the build on HIGH/CRITICAL by default; adjust as you like
-          additional_args: --severity HIGH,CRITICAL
+          additional_args: --minimum-severity HIGH
