@@ -95,3 +95,34 @@ resource "helm_release" "argocd" {
 
   depends_on = [kubernetes_namespace.argocd]
 }
+
+resource "helm_release" "ingress_nginx" {
+  name       = "ingress-nginx"
+  namespace  = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart      = "ingress-nginx"
+  version    = "4.11.0" # or a current 4.x
+
+  create_namespace = true
+  wait             = true
+  timeout          = 600
+
+  # Use hostPorts so NGINX listens on 80/443 on the node
+  set {
+    name  = "controller.hostPort.enabled"
+    value = "true"
+  }
+
+  # We only need ClusterIP; kind hostPorts + extraPortMappings handle the rest
+  set {
+    name  = "controller.service.type"
+    value = "ClusterIP"
+  }
+
+  # Make this the default IngressClass
+  set {
+    name  = "controller.ingressClassResource.default"
+    value = "true"
+  }
+}
+
