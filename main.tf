@@ -53,3 +53,45 @@ resource "kind_cluster" "dev" {
     # }
   }
 }
+
+# --- ArgoCD namespace ---
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = "argocd"
+  }
+
+  depends_on = [kind_cluster.dev]
+}
+
+# --- ArgoCD Helm release ---
+resource "helm_release" "argocd" {
+  name       = "argocd"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  # pick a version that exists in the repo; you can update later
+  version = "6.7.18"
+
+  # make sure Terraform waits until it's really up
+  timeout = 600
+  wait    = true
+
+  # Service type for the ArgoCD server
+  # Option 1: keep ClusterIP and use port-forward (what you do now)
+  set {
+    name  = "server.service.type"
+    value = "ClusterIP"
+  }
+
+  # Option 2: uncomment to expose as NodePort (then map via kind extraPortMappings)
+  # set {
+  #   name  = "server.service.type"
+  #   value = "NodePort"
+  # }
+  # set {
+  #   name  = "server.service.nodePortHttps"
+  #   value = "30443"
+  # }
+
+  depends_on = [kubernetes_namespace.argocd]
+}
