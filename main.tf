@@ -11,8 +11,8 @@ resource "kind_cluster" "dev" {
 
     # Expose API server for remote use
     networking {
-      api_server_address = "0.0.0.0" # listen on all interfaces
-      api_server_port    = 6443      # fixed port instead of random
+      api_server_address = "127.0.0.1" # listen on all interfaces
+      api_server_port    = 6443        # fixed port instead of random
     }
 
     # Control-plane node, port-mapped to host
@@ -70,7 +70,7 @@ resource "helm_release" "argocd" {
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   # pick a version that exists in the repo; you can update later
-  version = "6.7.18"
+  version = "9.1.3"
 
   # make sure Terraform waits until it's really up
   timeout = 600
@@ -78,11 +78,12 @@ resource "helm_release" "argocd" {
 
   # Service type for the ArgoCD server
   # Option 1: keep ClusterIP and use port-forward (what you do now)
-  set {
-    name  = "server.service.type"
-    value = "ClusterIP"
-  }
-
+  set = [
+    {
+      name  = "server.service.type"
+      value = "ClusterIP"
+    }
+  ]
   # Option 2: uncomment to expose as NodePort (then map via kind extraPortMappings)
   # set {
   #   name  = "server.service.type"
@@ -93,7 +94,9 @@ resource "helm_release" "argocd" {
   #   value = "30443"
   # }
 
-  depends_on = [kubernetes_namespace.argocd]
+  depends_on = [
+    kubernetes_namespace.argocd
+  ]
 }
 
 resource "helm_release" "ingress_nginx" {
@@ -108,21 +111,23 @@ resource "helm_release" "ingress_nginx" {
   timeout          = 600
 
   # Use hostPorts so NGINX listens on 80/443 on the node
-  set {
-    name  = "controller.hostPort.enabled"
-    value = "true"
-  }
-
-  # We only need ClusterIP; kind hostPorts + extraPortMappings handle the rest
-  set {
-    name  = "controller.service.type"
-    value = "ClusterIP"
-  }
-
-  # Make this the default IngressClass
-  set {
-    name  = "controller.ingressClassResource.default"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "controller.hostPort.enabled"
+      value = "true"
+    },
+    {                                                      
+      name  = "controller.service.type"                      
+      value = "ClusterIP"                              
+    },                                                      
+    {
+      name  = "controller.ingressClassResource.default"      
+      value = "ClusterIP"
+    }
+  ]
+  
+  depends_on = [
+    kind_cluster.dev
+  ]
 }
 

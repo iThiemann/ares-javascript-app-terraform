@@ -5,15 +5,15 @@ terraform {
   required_providers {
     kind = {
       source  = "tehcyx/kind"
-      version = "0.9"
+      version = "0.9.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.30"
+      version = "~> 2.38"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.13"
+      version = "~> 3.1.1"
     }
   }
 }
@@ -24,11 +24,14 @@ provider "kind" {}
 provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "kind-dev-cluster"
+  #  insecure       = true # 👈 disable cert hostname check
+
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     config_path    = "~/.kube/config"
     config_context = "kind-dev-cluster"
+    # insecure       = true
   }
 }
